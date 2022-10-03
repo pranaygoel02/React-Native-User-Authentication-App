@@ -1,20 +1,72 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState, useContext } from 'react';
+import { useFonts } from 'expo-font' ;
+import { createStackNavigator} from '@react-navigation/stack'
+import { NavigationContainer , DefaultTheme } from '@react-navigation/native'
+import 'react-native-gesture-handler';
+import HomeNavigator from './screens/HomeNavigator';
+import Login from './screens/Login';
+import Signup from './screens/Signup';
+import ForgotPassword from './screens/ForgotPassword';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { auth } from './firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+const Stack = createStackNavigator () ;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  
+  const theme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: 'transparent'
+    }
+  }
+  
+  const App = () => {
+    const [loggedIn, setLoggedIn] = useState(false)
+    
+    useEffect(()=>{
+      const getLoginState = () => {
+        try{
+          AsyncStorage.getItem('LoggedIn')
+          .then(value => {
+            if(value === 'true'){
+              setLoggedIn(true);
+            }
+            else{
+              setLoggedIn(false)
+            }
+          })
+        }catch(err){
+          console.log(err);
+        }
+      }
+      getLoginState()
+    },[loggedIn])
+    
+    const [loaded] = useFonts({
+      PoppinsMedium: require('./assets/fonts/Poppins-Medium.ttf'),
+      PoppinsSemiBold: require('./assets/fonts/Poppins-SemiBold.ttf'),
+      PoppinsBold: require('./assets/fonts/Poppins-Bold.ttf'),
+    })
+    
+    if(!loaded) return null;
+
+         return (
+           <SafeAreaProvider>
+           <NavigationContainer theme={theme}>
+              <Stack.Navigator initialRouteName={loggedIn ? 'Home': 'Login'}>
+                <Stack.Group>
+                <Stack.Screen options={{ headerShown: false }} name="Home" component={HomeNavigator}/>
+                </Stack.Group>
+                <Stack.Group>
+                <Stack.Screen options={{headerShown: false}} name={'Login'} component={Login}/>
+                <Stack.Screen options={{headerShown: false}} name='Signup' component={Signup}/>
+                <Stack.Screen options={{headerShown: false}} name='ForgotPassword' component={ForgotPassword}/>
+                </Stack.Group>
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SafeAreaProvider>
+        )
+      }
+export default App;

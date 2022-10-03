@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "NftMarketPlace",
-    "slug": "NftMarketPlace",
+    "name": "ForumApp",
+    "slug": "ForumApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
