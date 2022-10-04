@@ -42,7 +42,7 @@ const Login = ({navigation}) => {
         try{
           AsyncStorage.getItem('LoggedIn')
           .then(value => {
-            if(value!== 'false'){
+            if(value!== 'false' && value!== null){
               navigation.replace('Home')
             }
           })

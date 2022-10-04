@@ -9,7 +9,7 @@ const wait = timeout => {
 
 
 const Feed = ({navigation,route}) => {
-  console.log(auth.currentUser?.email);
+  console.log('auth.currentUser?.email: ', auth.currentUser?.email);
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = React.useCallback(() => {

@@ -27,9 +27,11 @@ const Stack = createStackNavigator () ;
     
     useEffect(()=>{
       const getLoginState = () => {
+        console.log('use effect running');
         try{
           AsyncStorage.getItem('LoggedIn')
           .then(value => {
+            console.log(value);
             if(value === 'true'){
               setLoggedIn(true);
             }
@@ -42,7 +44,7 @@ const Stack = createStackNavigator () ;
         }
       }
       getLoginState()
-    },[loggedIn])
+    },[])
     
     const [loaded] = useFonts({
       PoppinsMedium: require('./assets/fonts/Poppins-Medium.ttf'),
@@ -57,12 +59,12 @@ const Stack = createStackNavigator () ;
            <NavigationContainer theme={theme}>
               <Stack.Navigator initialRouteName={loggedIn ? 'Home': 'Login'}>
                 <Stack.Group>
-                <Stack.Screen options={{ headerShown: false }} name="Home" component={HomeNavigator}/>
-                </Stack.Group>
-                <Stack.Group>
                 <Stack.Screen options={{headerShown: false}} name={'Login'} component={Login}/>
                 <Stack.Screen options={{headerShown: false}} name='Signup' component={Signup}/>
                 <Stack.Screen options={{headerShown: false}} name='ForgotPassword' component={ForgotPassword}/>
+                </Stack.Group>
+                <Stack.Group>
+                <Stack.Screen options={{ headerShown: false }} name="Home" component={HomeNavigator}/>
                 </Stack.Group>
               </Stack.Navigator>
             </NavigationContainer>
