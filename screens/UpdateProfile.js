@@ -65,7 +65,7 @@ const deleteAccount = () => {
               <Text style={[styles.header,{marginBottom: 16}]}>Update Profile</Text>
               
               <View style={{borderRadius: 500, marginBottom: 16, }}>
-                <Image source={require('../assets/user.jpg')} style={{width: 150, height: 150, borderRadius: 500, position: 'relative'}} resizeMode={'contain'}/>
+                <Image source={require('../assets/user.png')} style={{width: 150, height: 150, borderRadius: 500, position: 'relative'}} resizeMode={'contain'}/>
                 <TouchableOpacity style={{position: 'absolute', backgroundColor: 'rgba(1,1,1,0.1)', width: 150, height: 150, borderRadius: 500, alignItems: 'center', justifyContent: 'space-evenly'}}>
                   <MaterialIcons name='add-photo-alternate' size={40} color={'#fff'}/>
                   <Text style={{color: 'white', fontSize: 16, textAlign: 'center', fontWeight: '500'}}>Change Profile Photo</Text>

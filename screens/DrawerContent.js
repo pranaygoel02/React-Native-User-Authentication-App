@@ -44,12 +44,12 @@ const DrawerContent = (props) => {
       </GestureRecognizer>
       <View style={{alignItems: 'center', width: '100%', paddingHorizontal: 25, marginVertical: 15}}>
         <View style={{borderRadius: 500, position: 'relative'}}>
-          <Image source={require('../assets/user.jpg')} style={{width: 150, height: 150, borderRadius: 500}} resizeMode={'contain'}/>
+          <Image source={require('../assets/user.png')} style={{width: 150, height: 150, borderRadius: 500}} resizeMode={'contain'}/>
           <TouchableHighlight onPress={()=>setModalVisible(true)} style={{position: 'absolute', zIndex: 1, backgroundColor: 'rgb(179, 198, 234)', bottom: 10, right: 10, borderRadius: 20, padding: 6}}>
             <MaterialIcons name='edit' size={20} color={'rgb(0, 120, 200)'}/>
           </TouchableHighlight>
         </View>
-        <Text>Hello</Text>
+        <Text>{auth.currentUser.email}</Text>
       </View>
         <DrawerContentScrollView style={{paddingHorizontal: 10,width: '100%'}} {...props}>
             <DrawerItemList {...props} />
