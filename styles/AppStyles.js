@@ -53,6 +53,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 0.3,
         width: '90%',
     },
+    input_post: {
+        width: '100%'
+    },
     error: {
         alignSelf: 'center',
         color:'red'
