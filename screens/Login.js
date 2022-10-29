@@ -118,12 +118,12 @@ const Login = ({navigation}) => {
         <TouchableOpacity onPress={login} style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
-        <View style={styles.or}>
+        {/* <View style={styles.or}>
             <View style={styles.line}></View>
             <Text style={styles.orText}>OR</Text>
             <View style={styles.line}></View>
         </View>
-        <GoogleLogin navigation={navigation} text='Login'/>
+        <GoogleLogin navigation={navigation} text='Login'/> */}
       </View>
     <Text style={styles.signup}>New to Our App? <Text onPress={()=>{navigation.replace('Signup')}} style={styles.link}>Sign up</Text></Text>
     </View>

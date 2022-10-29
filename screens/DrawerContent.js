@@ -49,7 +49,7 @@ const DrawerContent = (props) => {
             <MaterialIcons name='edit' size={20} color={'rgb(0, 120, 200)'}/>
           </TouchableHighlight>
         </View>
-        <Text>{auth.currentUser.email}</Text>
+        <Text>{auth.currentUser?.email}</Text>
       </View>
         <DrawerContentScrollView style={{paddingHorizontal: 10,width: '100%'}} {...props}>
             <DrawerItemList {...props} />

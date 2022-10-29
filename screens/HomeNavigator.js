@@ -5,6 +5,7 @@ import Details from './Details';
 import Feed from './Feed';
 import 'react-native-gesture-handler';
 import DrawerContent from './DrawerContent';
+import Post from './Post';
 
 const Drawer = createDrawerNavigator()
 const Stack = createStackNavigator()
@@ -22,7 +23,8 @@ const HomeNavigator = ({navigation, user}) => {
       }
     }>
       <Drawer.Screen options={{headerShown: false}} name="Feed" component={Feed} />
-      <Drawer.Screen options={{headerShown: false}} name="Details" component={Details} />
+      {/* <Drawer.Screen options={{headerShown: false}} name="Post" component={Post} /> */}
+      <Drawer.Screen options={{headerShown: false}} name="My Posts" component={Details} />
     </Drawer.Navigator>
   )
 }

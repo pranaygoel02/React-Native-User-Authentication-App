@@ -3,7 +3,7 @@ import React,{useEffect, useState, useMemo, useCallback} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {styles} from '../styles/AppStyles'
 import { auth,db } from '../firebase'
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { deleteUser } from 'firebase/auth'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -57,6 +57,16 @@ const deleteAccount = () => {
   });
 }
 
+const updateProfile = async() => {
+  const docRef = doc(db, "users", auth.currentUser?.email);
+    await updateDoc(docRef, {
+      name: name,
+      username: username,
+      phoneNumber: phoneNumber
+    });
+}
+
+
     return (
     <SafeAreaView style={{flex: 1}}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -109,7 +119,7 @@ const deleteAccount = () => {
                 />
               </View>
               <View style={styles.buttons}>
-        <TouchableOpacity onPress={()=>{}} style={styles.button}>
+        <TouchableOpacity onPress={updateProfile} style={styles.button}>
             <Text style={styles.buttonText}>Update Profile</Text>
         </TouchableOpacity>
         <View style={styles.or}>

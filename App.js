@@ -10,6 +10,8 @@ import ForgotPassword from './screens/ForgotPassword';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { auth } from './firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Details from './screens/Details';
+import Post from './screens/Post';
 
 const Stack = createStackNavigator () ;
 
@@ -27,11 +29,11 @@ const Stack = createStackNavigator () ;
     
     useEffect(()=>{
       const getLoginState = () => {
-        console.log('use effect running');
+        // console.log('use effect running');
         try{
           AsyncStorage.getItem('LoggedIn')
           .then(value => {
-            console.log(value);
+            // console.log(value);
             if(value === 'true'){
               setLoggedIn(true);
             }
@@ -65,6 +67,7 @@ const Stack = createStackNavigator () ;
                 </Stack.Group>
                 <Stack.Group>
                 <Stack.Screen options={{ headerShown: false }} name="Home" component={HomeNavigator}/>
+                <Stack.Screen options={{ headerShown: false }} name="Post" component={Post}/>
                 </Stack.Group>
               </Stack.Navigator>
             </NavigationContainer>

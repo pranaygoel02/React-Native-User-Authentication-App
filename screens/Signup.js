@@ -14,6 +14,7 @@ const Signup = ({navigation}) => {
     const [showPass, setShowPass] = useState(false)
     const [showCPass, setShowCPass] = useState(false)
     const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [CPassword, setCPassword] = useState('')
     const [validateMessage, setValidateMessage] = useState(null)
@@ -49,6 +50,7 @@ const Signup = ({navigation}) => {
     }
     const clearForm = () => {
         setEmail('')
+        setUsername('')
         setPassword('')
         setCPassword('')
         setSigningin(prev=>!prev)
@@ -80,8 +82,7 @@ const Signup = ({navigation}) => {
                     email: auth.currentUser.email,
                     photo: auth.currentUser.photoURL ? auth.currentUser.photoURL : '',
                     phoneNumber: auth.currentUser.phoneNumber ? auth.currentUser.phoneNumber : '',
-                    username: '',
-                    dob: ''
+                    username: username,
                   }
                 addUserToFirestore(data);
                 clearForm();
@@ -120,13 +121,23 @@ const Signup = ({navigation}) => {
           <Text style={styles.header}>Sign up</Text>
         </View>
         <View style={styles.inputField}>
-        <MaterialIcons name='alternate-email' size={24} color='#666'/>
+        <MaterialIcons name='mail-outline' size={24} color='#666'/>
         <TextInput
             placeholder='Email ID'
             name='email'
             style={[styles.input, {marginVertical: 8}]}
             value={email}
             onChangeText={text=>setEmail(text)}
+        />
+        </View>
+        <View style={styles.inputField}>
+        <MaterialIcons name='alternate-email' size={24} color='#666'/>
+        <TextInput
+            placeholder='Username'
+            name='username'
+            style={[styles.input, {marginVertical: 8}]}
+            value={username}
+            onChangeText={text=>setUsername(text)}
         />
         </View>
         <View style={styles.inputField}>
@@ -163,12 +174,12 @@ const Signup = ({navigation}) => {
         <TouchableOpacity disabled={signingin} onPress={signup} style={styles.button}>
             <Text style={styles.buttonText}>Sign up</Text>
         </TouchableOpacity>
-        <View style={styles.or}>
+        {/* <View style={styles.or}>
             <View style={styles.line}></View>
             <Text style={styles.orText}>OR</Text>
             <View style={styles.line}></View>
         </View>
-        <GoogleLogin navigation={navigation} text = 'Sign up'/>
+        <GoogleLogin navigation={navigation} text = 'Sign up'/> */}
       </View>
     <Text style={styles.signup}>Already have an account? <Text onPress={()=>{navigation.replace('Login')}} style={styles.link}>Login</Text></Text>
     </View>

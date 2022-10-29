@@ -67,6 +67,9 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
     },
+    verified:{
+        color: 'green'
+    },
     button: {
         padding: 14,
         backgroundColor: '#1660f9',
