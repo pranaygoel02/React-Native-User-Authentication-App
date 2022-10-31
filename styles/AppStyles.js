@@ -113,6 +113,14 @@ const styles = StyleSheet.create({
     googleText: {
         color: 'rgba(10,10,10,0.7)',
         textAlign: 'center',
+    },
+
+    scrollView: {
+        display:'flex',
+        flexDirection:'column'
+    },
+    scrollViewRev: {
+        flexDirection:'column-reverse'
     }
 })
 

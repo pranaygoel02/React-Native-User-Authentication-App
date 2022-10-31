@@ -1,8 +1,9 @@
-import { StyleSheet,Modal,Image, Text, View, RefreshControl, ScrollView,FlatList, TouchableOpacity } from 'react-native'
+import { StyleSheet,Modal,Image, Text,TextInput ,View, RefreshControl, ScrollView,FlatList, TouchableOpacity } from 'react-native'
 import {auth,db} from '../firebase'
 import React, {useState, useEffect, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import Octicons from 'react-native-vector-icons/Octicons'
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { doc, getDoc } from "firebase/firestore";
 import {styles} from '../styles/AppStyles'
@@ -22,9 +23,10 @@ const Feed = ({navigation,route}) => {
   const [docs,setDocs] = useState([])
   const [newest, setNewest] = useState(true)
   const [list, setList] = useState([])
-  const [showOpen, setShowOpen] = useState(false);
+  const [showOpen, setShowOpen] = useState(true);
   const [showClosed, setShowClosed] = useState(false);
   const [error,setError] = useState('')
+  const [search, setSearch] = useState('')
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -39,7 +41,7 @@ const Feed = ({navigation,route}) => {
   },[])
   
   useEffect(()=>{
-    setList(prev=>docs)
+    setList(prev=>docs.filter(doc=>{return doc?.open===showOpen}))
   },[docs])
   
   const getAllDocs = useCallback(async() => {
@@ -67,42 +69,44 @@ const Feed = ({navigation,route}) => {
 });
 
   useEffect(()=>{
-    if((showClosed && showOpen) || (!showClosed && !showOpen)) setList(prev=>docs)
-    if(showClosed && !showOpen)  setList(prev=>docs.filter(doc=>{return doc?.open===false}))
-    if(!showClosed && showOpen)  setList(prev=>docs.filter(doc=>{return doc?.open}))
-  },[showOpen,showClosed])
+    // if((showClosed && showOpen) || (!showClosed && !showOpen)) setList(prev=>docs)
+    // if(showClosed && !showOpen)  setList(prev=>docs.filter(doc=>{return doc?.open===false}))
+    // if(!showClosed && showOpen)  setList(prev=>docs.filter(doc=>{return doc?.open}))
+    setList(prev=>docs.filter(doc=>{return doc?.open===showOpen}))
+  },[showOpen])
 
   useEffect(()=>{
     if(list.length == 0){
-      if((showClosed && showOpen) || (!showClosed && !showOpen)) setError(prev=>`${docs.length ==0 && 'Lets add your first post.'}`)
-      if(showClosed && !showOpen)  setError(prev=>`${docs.length == 0 ? 'Lets add your first post.': 'No posts are closed yet.'}`)
-      if(!showClosed && showOpen)  setError(prev=> `${docs.length ==0 ? 'Lets add your first post.':'Lets add your next post.'}`)
+      if(docs.length == 0) setError(prev=>'Lets add your first post.')
+      if(!showOpen)  setError(prev=>`${docs.length == 0 ? 'Lets add your first post.': 'No posts are closed yet.'}`)
+      if(showOpen)  setError(prev=> `${docs.length ==0 ? 'Lets add your first post.':'Lets add your next post.'}`)
     }
   },[list])
+
+
+  useEffect(()=>{
+    setList(prev=>docs.filter(doc=>{
+      return doc.title.toLowerCase().includes(search.toLowerCase())
+    }))
+  },[search])
 
   return (
     <SafeAreaView style={{flex: 1,alignItems:'center',marginHorizontal:8}}>
       <Text style={styles.header}>Your Posts</Text>
-      <View style={{flexDirection: 'row',alignItems: 'center',justifyContent:'space-between',width:'100%'}}>
-      <View style={{flexDirection: 'row',alignItems: 'center'}}>
-      <View style={{flexDirection: 'row',alignItems: 'center',marginRight:4}}>
-      <Checkbox
-          style={{marginHorizontal: 4,borderRadius:20}}
-          value={showOpen}
-          onValueChange={setShowOpen}
-          color={showOpen ? 'rgb(25, 134, 214)' : undefined}
-        />
-        <Text style={{fontSize: 16}}>Open</Text>
+      <View style={[{width:'100%',display:'flex',flexDirection:'row',padding:2,paddingHorizontal:8,justifyContent:'flex-start',alignItems:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8,marginBottom:4}]}>
+      <MaterialIcons name='search' size={20}/>
+      <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search...' />
       </View>
+      <View style={{flexDirection: 'row',alignItems: 'center',justifyContent:'space-between',width:'100%',paddingVertical:8}}>
       <View style={{flexDirection: 'row',alignItems: 'center'}}>
-      <Checkbox
-          style={{marginHorizontal: 4,borderRadius:20}}
-          value={showClosed}
-          onValueChange={setShowClosed}
-          color={showClosed ? 'rgb(25, 134, 214)' : undefined}
-        />
-        <Text style={{fontSize: 16}}>Closed</Text>
-      </View>
+      <TouchableOpacity onPress={()=> setShowOpen(prev=>true)} style={[showOpen && styles1.open,!showOpen && {borderWidth:1,borderColor:'rgb(35, 134, 54)'},{padding: 8,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
+    <Octicons name={'issue-opened'} size={20} color={showOpen ? '#fff' : 'rgb(35, 134, 54)'}/>
+      <Text style={[{marginLeft:4,fontSize:16,textTransform:'capitalize'},showOpen ? {color:'white'} : {color:'rgb(35, 134, 54)'}]}>{'open'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={()=> setShowOpen(prev=>false)} style={[!showOpen && styles1.closed,showOpen && {borderWidth:1,borderColor:'rgb(137, 87, 229)'},{padding: 8,marginHorizontal:8,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
+    <Octicons name={'issue-closed'} size={20} color={!showOpen ? '#fff' : 'rgb(137, 87, 229)'}/>
+      <Text style={[{marginLeft:4,fontSize:16,textTransform:'capitalize'},!showOpen ? {color:'white'} : {color:'rgb(137, 87, 229)'}]}>{'closed'}</Text>
+      </TouchableOpacity>
       </View>
       <View style={{marginVertical:2,alignSelf:'flex-end',display:'flex',flexDirection:'row',alignItems:'center', padding:2,paddingHorizontal:8,justifyContent:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}}>
       <Text style={{fontSize:16}}>Showing {newest ? <Text>Latest</Text> : <Text>Oldest</Text>}</Text>
@@ -119,8 +123,8 @@ const Feed = ({navigation,route}) => {
       </ScrollView>
       :
       <View style={{flex:1,justifyContent:'center',position:'relative'}}>
-        <Text style={{position:'absolute',zIndex:1,fontSize:36,width:'75%',fontWeight:'600',top:60,left:40}}>{error}</Text>
-        <Image source={require('../assets/add.png')} style={{width: 330, height: 700}} resizeMode='contain'></Image>
+        <Text style={{position:'absolute',zIndex:1,fontSize:32,width:'60%',fontWeight:'600',top:44,left:70}}>{error}</Text>
+        <Image source={require('../assets/add.png')} style={{width: 330, height: 550}} resizeMode='contain'></Image>
       </View>
         }
       <GestureRecognizer onSwipeDown={()=>{
@@ -144,5 +148,16 @@ const Feed = ({navigation,route}) => {
     </SafeAreaView>
   )
 }
+
+
+
+const styles1 = StyleSheet.create({
+  open: {
+    backgroundColor:'rgb(35, 134, 54)',
+  },
+  closed: {
+    backgroundColor:'rgb(137, 87, 229)',
+  },
+})
 
 export default Feed

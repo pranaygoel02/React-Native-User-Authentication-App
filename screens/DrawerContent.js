@@ -50,8 +50,12 @@ const DrawerContent = (props) => {
           </TouchableHighlight>
         </View>
         <Text>{auth.currentUser?.email}</Text>
+        <TouchableOpacity onPress={logout} style={{marginVertical:2,display:'flex',flexDirection:'row',alignItems:'center', padding:2,paddingHorizontal:8,justifyContent:'center', elevation: 2,backgroundColor:'#fff',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}}>
+        <MaterialIcons name='logout' size={24} color={'#666'}/>
+        <Text style={{marginHorizontal:8}}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
-        <DrawerContentScrollView style={{paddingHorizontal: 10,width: '100%'}} {...props}>
+        {/* <DrawerContentScrollView style={{paddingHorizontal: 10,width: '100%'}} {...props}>
             <DrawerItemList {...props} />
         </DrawerContentScrollView>
         <DrawerItem
@@ -59,7 +63,7 @@ const DrawerContent = (props) => {
             label='Sign Out'
             onPress={logout}
             style={{paddingHorizontal: 10,borderTopColor:'#666',borderTopWidth:0.2, width: '100%'}}
-        />
+        /> */}
       
     </SafeAreaView>
   )

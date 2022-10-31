@@ -34,7 +34,9 @@ const newPost = async () => {
           title: title,
           query: query,
           tags: tagsArr,
-          open: true
+          open: true,
+          votes: 0,
+          voters : []
         }
       ]
     });
@@ -71,11 +73,12 @@ useEffect(()=>{
   
 
     return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{flex: 1,backgroundColor:'rgba(0,0,0,0.5)',}}>
       {/* {!adding &&  */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAvoidingView style={[styles.container,{paddingHorizontal: 16,justifyContent:'flex-start',marginTop:32}]} behavior='padding'>
-            <View style={[styles.inputContainer,{justifyContent:'space-between'}]}>
+        <KeyboardAvoidingView style={[styles.container,{justifyContent:'flex-end'}]} behavior='padding'>
+            <View style={[styles.inputContainer,{justifyContent:'space-between',paddingHorizontal: 16,paddingBottom:32,backgroundColor:'#fff',borderTopLeftRadius:32,borderTopRightRadius:32,elevation:8}]}>
+            <View style={{alignSelf:'center',marginVertical:16,backgroundColor:'rgba(0,0,0,0.1)',borderRadius:8,width:'25%',height:6}}></View>
               <View>
               <Text style={[styles.header,{marginBottom: 16,alignSelf:'flex-start'}]}>Post your query</Text>
               <View style={[styles.inputField,{marginBottom: 8}]}>
@@ -100,7 +103,7 @@ useEffect(()=>{
                 />
               </View>
               <Text style={{marginVertical:8}}>{query.length} characters</Text>
-              <TextInput value={tags} onChangeText={(text)=>setTags(prev=>text)} style={[styles.input,styles.input_post,{color:'rgb(24,152,254)',fontSize:16}]} placeholder='Add tag... For Example: @Nodejs @Reactjs...'/>
+              <TextInput value={tags} onChangeText={(text)=>setTags(prev=>text)} style={[styles.input,styles.input_post,{color:'rgb(24,152,254)',fontSize:16}]} placeholder='Add tags... For Example: @Nodejs @Reactjs...'/>
               </View>
               <View style={{display:'flex'}}>
                 <TouchableOpacity disabled={adding} onPress={()=>{

@@ -11,6 +11,7 @@ import Comment from '../components/Comment'
 import { db,auth } from '../firebase'
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Octicons from 'react-native-vector-icons/Octicons'
 // import LinearGradient from 'react-native-linear-gradient';
 import { LinearGradient } from 'expo-linear-gradient'
@@ -24,6 +25,9 @@ const Post = ({}) => {
     const [comments,setComments] = useState([])
     const [newest, setNewest] = useState(true)
     const [open, setOpen] = useState(post?.open)
+    const [votes, setVotes] = useState(post?.votes)
+    const [voters,setVoters] = useState(post?.voters)
+    const [vote,setVote] = useState(post?.voters.includes(auth.currentUser?.email))
 
     const newComment = async () => {
       console.log('adding comment');
@@ -89,6 +93,9 @@ const handlePostStatus = async () => {
   }
 }
 
+
+
+
   return (
     <SafeAreaView style={[open && {paddingBottom:150},{paddingTop:16,paddingHorizontal:8,flex:1}]}>
       <ScrollView>
@@ -105,6 +112,13 @@ const handlePostStatus = async () => {
         {post.tags?.map(tag => <Chip data={tag}/>)}
       </View>}
       <Text style={{marginVertical:8,borderLeftWidth: 5,paddingHorizontal:12, borderColor:'green'}}>{post?.query}</Text>
+      {post.votes >=0 && 
+      <View style={{display:'flex',flexDirection:'row', alignItems:'center',marginVertical:8}}>
+      <TouchableOpacity onPress={()=>{}}>
+    <MaterialCommunityIcons name={vote ? 'thumb-up' :'thumb-up-outline'} size={20} color={'green'}/>
+      </TouchableOpacity>
+    <Text style={{marginHorizontal:4}}>{votes}</Text>
+    </View>}
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',marginVertical:4,width:'100%',justifyContent:'space-between'}}>
       <Text style={[styles.header,{fontSize:24,marginVertical:8}]}>Comments</Text>
       <TouchableOpacity onPress={()=>{setNewest(prev=>!prev)}} style={{elevation:2,padding:2,shadowColor:'black'}}>

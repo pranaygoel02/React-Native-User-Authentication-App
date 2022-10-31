@@ -91,9 +91,9 @@ const Feed = ({navigation,route}) => {
     return c-d;
 });
   return (
-    <SafeAreaView style={{flex: 1,alignItems:'center',marginHorizontal:8}}>
+    <SafeAreaView style={{flex: 1,alignItems:'center',paddingHorizontal:8}}>
       <Text style={styles.header}>Recent Queries</Text>
-      <View style={{width:'100%',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+      <View style={{width:'100%',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingBottom:8}}>
       <View style={[{width:'74%',display:'flex',flexDirection:'row',padding:2,paddingHorizontal:8,justifyContent:'flex-start',alignItems:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}]}>
       <MaterialIcons name='search' size={20}/>
       <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search...' />
@@ -123,6 +123,7 @@ const Feed = ({navigation,route}) => {
           animationType='slide'
           visible={modalVisible}
           statusBarTranslucent = { true}
+          transparent={true}
           onRequestClose={()=>setModalVisible(false)}>
           <AddPost onClose={()=>setModalVisible(false)} />
         </Modal>
