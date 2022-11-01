@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
 
     scrollView: {
         display:'flex',
-        flexDirection:'column'
+        flexDirection:'column',
+        paddingBottom: 70
     },
     scrollViewRev: {
         flexDirection:'column-reverse'

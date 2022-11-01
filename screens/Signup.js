@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font' ;
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import {auth,db} from '../firebase'
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { setDoc, doc } from 'firebase/firestore'
+import { setDoc,getDocs, doc,collection } from 'firebase/firestore'
 import GoogleLogin from '../components/GoogleLogin';
 import {styles} from '../styles/AppStyles'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,6 +19,8 @@ const Signup = ({navigation}) => {
     const [CPassword, setCPassword] = useState('')
     const [validateMessage, setValidateMessage] = useState(null)
     const [signingin,setSigningin] = useState(false)
+    const [usernames, setUsernames] = useState([])
+  
 
     useEffect(()=>{
         if(CPassword !== password){
@@ -48,6 +50,30 @@ const Signup = ({navigation}) => {
         console.log(err);
       }
     }
+    const getUsernames = async() => {
+      console.log('getting usernames');
+      // setUsernames(prev=>[])
+      try{
+        const querySnapshot = await getDocs(collection(db, "username"));
+        querySnapshot.forEach((doc) => {
+          console.log(doc.data());
+          // doc.data() is never undefined for query doc snapshots
+          // console.log(doc.id, " => ", doc.data());
+          setUsernames(prev=>[...new Set([...prev,doc.data().username])])
+          })
+      }catch(e){
+        console.log(e);
+      }
+      }
+    useEffect(()=>{
+      // setUsernames([])
+      
+      getUsernames()
+    },[])
+console.log('====================================');
+console.log('usernames: ',usernames);
+console.log('====================================');
+
     const clearForm = () => {
         setEmail('')
         setUsername('')
@@ -61,43 +87,57 @@ const Signup = ({navigation}) => {
     const addUserToFirestore = async (data) => {
         console.log('adding data: ', data);
         await setDoc(doc(db, "users", data.email), data);
+        await setDoc(doc(db, "username", data.email), {username:data.username});
     }
+    
+    // const addUsername = async (data) => {
+    //     await setDoc(doc(db, "username", data.email), username);
+    // }
 
     let signup = async ()=>{
         Keyboard.dismiss()
-        setSigningin(prev=>!prev)
-        if(password === CPassword){
-            await createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                console.log(validateMessage);
-                sendEmailVerification(auth.currentUser)
-                // addUserToFirestore();
-                console.log('====================================');
-                console.log(auth.currentUser);
-                console.log('====================================');
-                let data = {
-                    createdAt: new Date(),
-                    // uid: auth.currentUser.stsTokenManager.uid,
-                    name: auth.currentUser.displayName ? auth.currentUser.displayName : '',
-                    email: auth.currentUser.email,
-                    photo: auth.currentUser.photoURL ? auth.currentUser.photoURL : '',
-                    phoneNumber: auth.currentUser.phoneNumber ? auth.currentUser.phoneNumber : '',
-                    username: username,
-                  }
-                addUserToFirestore(data);
-                clearForm();
-                
-            })
-        .catch((error) => {
-            console.log(error);
-        let errorCode = error.code;
-        console.log(errorCode);
-        let errorMessage = error.message;
-        errorMessage ? setValidateMessage(prev=>error.message) : setValidateMessage(null)
-        setSigningin(prev=>!prev)
-    // ..
-  });
+        if(password!=='' && CPassword!=='' &&  password === CPassword && username!=='' && email!==''){
+          if(!usernames.includes(username)){
+            setSigningin(prev=>!prev)
+            setValidateMessage(prev=>'')
+              await createUserWithEmailAndPassword(auth, email, password)
+              .then((userCredential) => {
+                  console.log(validateMessage);
+                  sendEmailVerification(auth.currentUser)
+                  // addUserToFirestore();
+                  console.log('====================================');
+                  console.log(auth.currentUser);
+                  console.log('====================================');
+                  let data = {
+                      createdAt: new Date(),
+                      // uid: auth.currentUser.stsTokenManager.uid,
+                      name: auth.currentUser.displayName ? auth.currentUser.displayName : '',
+                      email: auth.currentUser.email,
+                      photo: auth.currentUser.photoURL ? auth.currentUser.photoURL : '',
+                      phoneNumber: auth.currentUser.phoneNumber ? auth.currentUser.phoneNumber : '',
+                      username: username,
+                    }
+                    addUserToFirestore(data);
+                  // addUsername(data);
+                  clearForm();
+                  
+              })
+              .catch((error) => {
+                  console.log(error);
+              let errorCode = error.code;
+              console.log(errorCode);
+              let errorMessage = error.message;
+              errorMessage ? setValidateMessage(prev=>error.message) : setValidateMessage(null)
+              setSigningin(prev=>!prev)
+            });
+          }
+          else{
+            setValidateMessage(prev=>'Username already taken.')
+          }
         }
+        else if(password==='') setValidateMessage(prev=>'Please enter password.')
+        else setValidateMessage(prev=>'*All fields are required.')
+        // setSigningin(prev=>!prev)
     }
 
 

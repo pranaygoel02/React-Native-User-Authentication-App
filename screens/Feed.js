@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import GestureRecognizer from 'react-native-swipe-gestures';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,onSnapshot } from "firebase/firestore";
 import {styles} from '../styles/AppStyles'
 import AddPost from './AddPost'
 import QuesCard from '../components/QuesCard'
@@ -24,7 +24,7 @@ const Feed = ({navigation,route}) => {
   const [list, setList] = useState([])
   const [newest, setNewest] = useState(true)
   const [search, setSearch] = useState('')
-  
+
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
@@ -36,12 +36,19 @@ const Feed = ({navigation,route}) => {
     // onRefresh()
     // setList(prev=>docs)
   },[])
-  
+  docs.sort(
+    function(a, b) {
+      var c = new Date(a.date);
+      var d = new Date(b.date);
+      if(newest) return d-c;
+      return c-d;
+  }
+  )
   useEffect(()=>{
+    console.log("docssssssssssssss:",docs);
     setList(prev=>docs)
     console.log(docs);
   },[docs])
-  
   
   const getAllDocs = async() => {
     setDocs(prev=>[])
@@ -50,16 +57,16 @@ const Feed = ({navigation,route}) => {
     console.log('====================================');
     const querySnapshot = await getDocs(collection(db, "questions"));
     querySnapshot.forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
-    // console.log(doc.id, " => ", doc.data());
     doc.data().questions.map(doc => {
-    //   console.log('====================================');
-    //   console.log(docs);
-    //   console.log('====================================');
       setDocs(prev=>[...new Set([...prev,doc])])
     })
     })
   }
+
+  useEffect(()=>{
+    setList(prev=>prev.reverse())
+  },[newest])
+
   // const getAllDocs = useCallback(async() => {
   //   setDocs(prev=>[])
   //   console.log('====================================');
@@ -80,16 +87,12 @@ const Feed = ({navigation,route}) => {
 
   useEffect(()=>{
     setList(prev=>docs.filter(doc=>{
-      return doc.title.toLowerCase().includes(search.toLowerCase())
+      return doc?.title.toLowerCase().includes(search.toLowerCase())
     }))
   },[search])
 
   console.log('auth.currentUser?.email: ', auth.currentUser?.email);
-  docs.sort(function(a, b) {
-    var c = new Date(a.date);
-    var d = new Date(b.date);
-    return c-d;
-});
+  
   return (
     <SafeAreaView style={{flex: 1,alignItems:'center',paddingHorizontal:8}}>
       <Text style={styles.header}>Recent Queries</Text>
@@ -108,8 +111,9 @@ const Feed = ({navigation,route}) => {
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {newest && list.reverse().map(doc=> doc && <QuesCard key={doc.id} navigation={navigation} doc={doc}/>)}
-        {!newest && list.map(doc=> doc && <QuesCard key={doc.id} navigation={navigation} doc={doc}/>)}
+        {/* {newest && list.reverse().map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc} />)}
+        {!newest && list.map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc} />)} */}
+        {list.map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc}/>)}
         {/* <View style={{marginVertical:16,borderTopWidth:0.2,padding:8,borderColor:'black',width:'100%'}}>
         <Text style={{textAlign:'center',color:'rgb(25, 134, 214)'}}>Team Forum App</Text>
         <Text style={{textAlign:'center',color:'rgb(25, 134, 214)'}}>Developed by Pranay Goel</Text>

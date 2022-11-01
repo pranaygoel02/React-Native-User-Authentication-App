@@ -31,6 +31,7 @@ const newPost = async () => {
           id: uuid.v4(),
           date: new Date().toISOString(),
           author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
+          author_mail: auth.currentUser.email,
           title: title,
           query: query,
           tags: tagsArr,

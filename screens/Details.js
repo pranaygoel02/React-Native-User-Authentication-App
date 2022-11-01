@@ -85,8 +85,8 @@ const Feed = ({navigation,route}) => {
 
 
   useEffect(()=>{
-    setList(prev=>docs.filter(doc=>{
-      return doc.title.toLowerCase().includes(search.toLowerCase())
+    setList(prev=>docs.filter(docu=>{
+      return docu.doc.title.toLowerCase().includes(search.toLowerCase())
     }))
   },[search])
 

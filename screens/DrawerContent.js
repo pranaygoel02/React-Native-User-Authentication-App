@@ -30,7 +30,7 @@ const DrawerContent = (props) => {
         });
         // props.navigation.replace('Login')
       }
-    
+    console.log(auth.currentUser.displayName);
   return (
     <SafeAreaView style={{flex:1, alignItems: 'center'}}>
       <GestureRecognizer onSwipeDown={()=>setModalVisible(false)}>
@@ -50,6 +50,7 @@ const DrawerContent = (props) => {
           </TouchableHighlight>
         </View>
         <Text>{auth.currentUser?.email}</Text>
+        <Text>{auth.currentUser?.displayName}</Text>
         <TouchableOpacity onPress={logout} style={{marginVertical:2,display:'flex',flexDirection:'row',alignItems:'center', padding:2,paddingHorizontal:8,justifyContent:'center', elevation: 2,backgroundColor:'#fff',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}}>
         <MaterialIcons name='logout' size={24} color={'#666'}/>
         <Text style={{marginHorizontal:8}}>Sign Out</Text>

@@ -9,7 +9,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Comment from '../components/Comment'
 import { db,auth } from '../firebase'
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove,onSnapshot, collection  } from "firebase/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Octicons from 'react-native-vector-icons/Octicons'
@@ -19,15 +19,18 @@ import { LinearGradient } from 'expo-linear-gradient'
 
 const Post = ({}) => {
   const {params: {post}} = useRoute()
-    console.log("post doc: ",post);
+    // console.log("post doc: ",post);
     const time = dayjs(post.date).fromNow(true)
     const [comment,setComment] = useState('')
     const [comments,setComments] = useState([])
+    const [list,setList] = useState([])
     const [newest, setNewest] = useState(true)
     const [open, setOpen] = useState(post?.open)
     const [votes, setVotes] = useState(post?.votes)
     const [voters,setVoters] = useState(post?.voters)
     const [vote,setVote] = useState(post?.voters.includes(auth.currentUser?.email))
+    const [currPostStatus, setcurrPostStatus] = useState(post)
+    const [questions, setQuestions] = useState([])
 
     const newComment = async () => {
       console.log('adding comment');
@@ -41,66 +44,94 @@ const Post = ({}) => {
           }
         ]
       });
-      setComments(prev=>[...prev,
-        {
-        date: new Date().toISOString(),
-        author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
-        comment: comment
-      }])
       setComment(prev=>'')
   }
 
-
-  
-
-  const getComments = async() => {
-    const docRef = doc(db, "comments", post?.id);
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data().comments);
-      setComments(docSnap.data().comments)
-    } else {
-      // doc.data() will be undefined in this case
-      console.log("No such document!");
-    }
-}
 useEffect(()=>{
-  setComment(prev=>'')
-  // setComments([])
-  getComments()
-  },[])
-  comments.sort(function(a, b) {
-    var c = new Date(a.date);
-    var d = new Date(b.date);
-    return c-d;
-});
-
-const handlePostStatus = async () => {
-  if(auth.currentUser?.email === post.author){
-    setOpen(prev=>!prev)
-    const docRef = doc(db, "questions", auth.currentUser?.email);
-    await updateDoc(docRef, {
-      questions: arrayRemove(post)
-    });
+  setList(prev=>comments)
+},[comments])
   
-    // Atomically add a new region to the "regions" array field.
-    await updateDoc(docRef, {
-        questions: arrayUnion({
-          ...post,open:!(post.open)
-        })
-    }); 
+comments?.sort(function(a, b) {
+  var c = new Date(a.date);
+  var d = new Date(b.date);
+  return c-d;
+});
+useEffect(()=>{
+    onSnapshot(doc(db, "comments", post?.id), (doc) => {
+    // console.log("Current data: ", doc.data());
+    if(doc.data()) setComments(doc.data()?.comments)
+  });
+},[])
+
+
+useEffect(()=>{
+  onSnapshot(doc(db, "questions", post?.author_mail), (doc) => {
+      // console.log("Current Post data: ", doc.data());
+      if(doc.data()) {
+        setQuestions(prev=>doc.data()?.questions.filter(doc => {return doc.id !== post.id}))
+        setcurrPostStatus(doc.data()?.questions.filter(doc => {return doc.id === post.id})[0])
+      } 
+  });
+},[])
+
+
+useEffect(()=>{
+  setOpen(prev=>currPostStatus.open)
+  setVotes(prev=>currPostStatus.votes)
+  setVoters(prev=>currPostStatus.voters)
+  setVote(prev=>currPostStatus?.voters?.includes(auth.currentUser?.email))
+},[currPostStatus])
+
+const handlePostOpen = async () => {
+  console.log('handling post open state');
+  try{
+       
+  await setDoc(doc(db, "questions", post?.author_mail), 
+      {
+        questions: [...questions,
+          {
+            ...currPostStatus,
+            open: !(currPostStatus.open)
+          }
+        ]
+      });
+      
+  } catch(err){
+    console.log('====================================');
+    console.log(err);
+    console.log('====================================');
   }
 }
 
+const handlePostVote = async () => {
+  console.log('handling post open state');
+  try
+  {    
+    await setDoc(doc(db, "questions", post?.author_mail), 
+      {
+        questions: [...questions,
+          {
+            ...currPostStatus,
+            votes: (vote) ? votes - 1 : votes + 1,
+            voters: (vote) ? voters.filter(doc=>{return doc!==auth.currentUser.email}) : [...voters,auth.currentUser.email]
+          }
+        ]
+      });    
+  }
+  catch(err){
+    console.log('====================================');
+    console.log(err);
+    console.log('====================================');
+  }
+}
 
-
+console.log('currPostStatus: ',currPostStatus);
 
   return (
     <SafeAreaView style={[open && {paddingBottom:150},{paddingTop:16,paddingHorizontal:8,flex:1}]}>
       <ScrollView>
       <Text style={[styles.header,{fontSize:32}]}>{post?.title}</Text>
-      <TouchableOpacity onPress={handlePostStatus} style={[open ? styles1.open : styles1.closed,{padding: 8,marginVertical:4,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
+      <TouchableOpacity onPress={()=>{if(auth.currentUser?.email === post.author_mail) handlePostOpen()}} style={[open ? styles1.open : styles1.closed,{padding: 8,marginVertical:4,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
     <Octicons name={`issue-${open ? 'opened':'closed'}`} size={20} color='#fff'/>
       <Text style={{marginLeft:4,fontSize:16,color:'#fff',textTransform:'capitalize'}}>{open ? 'open' : 'closed'}</Text>
       </TouchableOpacity>
@@ -112,21 +143,21 @@ const handlePostStatus = async () => {
         {post.tags?.map(tag => <Chip data={tag}/>)}
       </View>}
       <Text style={{marginVertical:8,borderLeftWidth: 5,paddingHorizontal:12, borderColor:'green'}}>{post?.query}</Text>
-      {post.votes >=0 && 
+      {votes >=0 && 
       <View style={{display:'flex',flexDirection:'row', alignItems:'center',marginVertical:8}}>
-      <TouchableOpacity onPress={()=>{}}>
+      <TouchableOpacity onPress={handlePostVote}>
     <MaterialCommunityIcons name={vote ? 'thumb-up' :'thumb-up-outline'} size={20} color={'green'}/>
       </TouchableOpacity>
     <Text style={{marginHorizontal:4}}>{votes}</Text>
     </View>}
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',marginVertical:4,width:'100%',justifyContent:'space-between'}}>
       <Text style={[styles.header,{fontSize:24,marginVertical:8}]}>Comments</Text>
-      <TouchableOpacity onPress={()=>{setNewest(prev=>!prev)}} style={{elevation:2,padding:2,shadowColor:'black'}}>
+      <TouchableOpacity onPress={()=>{setNewest(prev=>!prev)}} style={{elevation:2,padding:2,shadowColor:'black',marginLeft:8}}>
         <MaterialIcons name={newest ? 'arrow-circle-up' : 'arrow-circle-down'} size={24} color={'#000'}/>
       </TouchableOpacity>
       </View>
-      {newest && comments.reverse().map(com => <Comment comment={com}/>)}
-        {!newest && comments.map(com => <Comment comment={com}/>)}
+      {newest && list.reverse().map(com => <Comment comment={com}/>)}
+        {!newest && list.map(com => <Comment comment={com}/>)}
       </ScrollView>
       {open && <LinearGradient colors={['transparent', 'rgba(255,255,255,1)']} style={{position:'absolute',bottom:0,display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'white',width:'104%',padding:8}}>
       <TextInput onChangeText={(text)=>setComment(text)} value={comment} style={[styles.input,styles.input_post]} placeholder='Add comment...'/>

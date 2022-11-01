@@ -10,7 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 dayjs.extend(relativeTime)
 
-const QuesCard = ({navigation,doc}) => {
+const QuesCard = ({navigation,doc,idx}) => {
 
   const post = doc;
   console.log( "open =>", doc.open);
@@ -18,9 +18,9 @@ const QuesCard = ({navigation,doc}) => {
 
   return (
     <View style={styles.card}>
-      <Text  numberOfLines={2} style={styles.title}><Octicons name={`issue-${doc.open ? 'opened':'closed'}`} size={16}/> {doc?.title}</Text>
+      <Text  numberOfLines={2} style={styles.title}><Octicons name={`issue-${doc?.open ? 'opened':'closed'}`} size={16}/> {doc?.title}</Text>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',padding:8,paddingBottom:16,width:'100%',justifyContent:'space-between'}}>
-        <Text style={[{ fontSize:12}]}>by {auth.currentUser.email === doc.author ? 'You' : doc.author}</Text>
+        <Text style={[{ fontSize:12}]}>by {auth.currentUser.email === doc?.author ? 'You' : doc?.author}</Text>
         <Text style={{ fontSize:12}}>{time} ago</Text>
       </View>
       <Text numberOfLines={4} style={[styles.query,doc.open ? styles.open : styles.closed]}>{doc?.query}</Text>

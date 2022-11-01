@@ -3,10 +3,12 @@ import React,{useEffect, useState, useMemo, useCallback} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {styles} from '../styles/AppStyles'
 import { auth,db } from '../firebase'
-import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, getDocs,collection } from "firebase/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { deleteUser } from 'firebase/auth'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getAuth, updateProfile, updateEmail  } from "firebase/auth";
+import { useNavigation } from '@react-navigation/native'
 
 const UpdateProfile = (props) => {
   const [user, setUser] = useState('')
@@ -14,6 +16,11 @@ const UpdateProfile = (props) => {
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [usernames,setUsernames]= useState([])
+  const [updating,setUpdating] = useState(false)
+  const [emailError,setEmailError] = useState('')
+  // const auth = getAuth();
+  const navigation = useNavigation()
 
 const getUserData = useCallback( async() => {
     const docRef = doc(db, "users", auth.currentUser.email);
@@ -49,22 +56,94 @@ useEffect(()=>{
   }
 const deleteAccount = () => {
   console.log('deleting');
+  console.log('====================================');
+  console.log(auth.currentUser);
+  console.log('====================================');
   deleteUser(auth.currentUser).then(() => {
+    console.log('deleted');
     saveLoginState();
-    props.navigation.replace('Login')
+    navigation.replace('Login')
   }).catch((error) => {
-    
+    console.log('====================================');
+    console.log(error);
+    console.log('====================================');
   });
+  
 }
 
-const updateProfile = async() => {
+useEffect(()=>{
+  const validate = (text) => {
+    console.log(text);
+    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+    if (!reg.test(text)) {
+      setEmailError(prev=>'Email is Not Correct');
+    }
+    else {
+      setEmailError(prev=>'')
+    }
+  }
+  validate(email)
+},[email])
+
+const updateUserProfile = async() => {
+  if(emailError ===''){
+    
+  setUpdating(prev=>true)
   const docRef = doc(db, "users", auth.currentUser?.email);
-    await updateDoc(docRef, {
-      name: name,
-      username: username,
-      phoneNumber: phoneNumber
+  if(name!==user.name || username!==user.username || phoneNumber!==user.phoneNumber){
+    
+  await updateDoc(docRef, {
+    name: name,
+    username: username,
+    phoneNumber: phoneNumber
     });
+    
+  }
+    if(name!==user.name){
+    updateProfile(auth.currentUser, {
+      displayName: name, photoURL: ""
+    }).then(() => {   
+    }).catch((error) => {
+      console.log(error);
+    });
+  }
+    if(email !== user.email){
+    updateEmail(auth.currentUser, email).then(() => {
+      // Email updated!
+      // ...
+    }).catch((error) => {
+      // An error occurred
+      // ...
+    });
+  }
+    
+    setUpdating(prev=>false)
+    
+  }
 }
+const getUsernames = useCallback(async() => {
+  console.log('getting usernames');
+  // setUsernames(prev=>[])
+  try{
+    const querySnapshot = await getDocs(collection(db, "username"));
+    querySnapshot.forEach((doc) => {
+      console.log(doc.data());
+      // doc.data() is never undefined for query doc snapshots
+      // console.log(doc.id, " => ", doc.data());
+      setUsernames(prev=>[...new Set([...prev,doc.data().username])])
+      })
+  }catch(e){
+    console.log(e);
+  }
+  },[])
+useEffect(()=>{
+  // setUsernames([])
+  
+  getUsernames()
+},[getUsernames])
+console.log('====================================');
+console.log('usernames: ',usernames);
+console.log('====================================');
 
 
     return (
@@ -97,10 +176,11 @@ const updateProfile = async() => {
                   placeholder='Email ID'
                   style={[styles.input,styles.marginVertical]}
                   value={email}
-                  onChangeText={text=>setEmail(text)}
+                  onChangeText={text=>setEmail(prev=>text)}
                 />
+                {emailError!=='' && <Text style={{color:'red',alignSelf:'center',textAlign:'center',width:'100%'}}>{emailError}</Text>}
               </View>
-              <View style={[styles.inputField,{marginBottom: 8}]}>
+              <View style={[styles.inputField,{marginBottom: 8,flexWrap:'wrap'}]}>
                 <MaterialIcons name='alternate-email' size={24} color='#666'/>
                 <TextInput
                   placeholder='Username'
@@ -108,6 +188,7 @@ const updateProfile = async() => {
                   value={username}
                   onChangeText={text=>setUsername(text)}
                 />
+              {(usernames.includes(username) && username!==user.username) && <Text style={{color:'red',alignSelf:'center',textAlign:'center',width:'100%'}}>*Username already taken.</Text>}
               </View>
               <View style={[styles.inputField,{marginBottom: 8}]}>
                 <MaterialIcons name='phone' size={24} color='#666'/>
@@ -119,8 +200,8 @@ const updateProfile = async() => {
                 />
               </View>
               <View style={styles.buttons}>
-        <TouchableOpacity onPress={updateProfile} style={styles.button}>
-            <Text style={styles.buttonText}>Update Profile</Text>
+        <TouchableOpacity onPress={()=>{if(!(usernames.includes(username) && username!==user.username) || name!==user.name || email!==user.email || phoneNumber!==user.phoneNumber) updateUserProfile()}} style={styles.button}>
+            <Text style={styles.buttonText}>{updating ? 'Updating...' : 'Update Profile'}</Text>
         </TouchableOpacity>
         <View style={styles.or}>
             <View style={styles.line}></View>
