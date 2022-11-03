@@ -8,10 +8,27 @@ import Chip from './Chip'
 import Octicons from 'react-native-vector-icons/Octicons'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 dayjs.extend(relativeTime)
 
 const QuesCard = ({navigation,doc,idx}) => {
-
+  const [username, setUsername] = useState('')
+    
+  useEffect(()=>{
+    const getUsername = () => {
+      // console.log('use effect running');
+      try{
+        AsyncStorage.getItem('Username')
+        .then(value => {
+          setUsername(prev=>value)
+        })
+      }catch(err){
+        console.log(err);
+      }
+    }
+    getUsername()
+  },[])
   const post = doc;
   console.log( "open =>", doc.open);
   const time = dayjs(doc.date).fromNow(true)
@@ -20,7 +37,7 @@ const QuesCard = ({navigation,doc,idx}) => {
     <View style={styles.card}>
       <Text  numberOfLines={2} style={styles.title}><Octicons name={`issue-${doc?.open ? 'opened':'closed'}`} size={16}/> {doc?.title}</Text>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',padding:8,paddingBottom:16,width:'100%',justifyContent:'space-between'}}>
-        <Text style={[{ fontSize:12}]}>by {auth.currentUser.email === doc?.author ? 'You' : doc?.author}</Text>
+        <Text style={[{ fontSize:12}]}>by @{doc?.author}</Text>
         <Text style={{ fontSize:12}}>{time} ago</Text>
       </View>
       <Text numberOfLines={4} style={[styles.query,doc.open ? styles.open : styles.closed]}>{doc?.query}</Text>
@@ -31,7 +48,7 @@ const QuesCard = ({navigation,doc,idx}) => {
         {doc?.votes >= 0 ?
         <View style={{display:'flex',flexDirection:'row', alignItems:'center'}}>
           <TouchableOpacity>
-        <MaterialCommunityIcons name={doc?.voters.includes(auth.currentUser?.email) ? 'thumb-up' :'thumb-up-outline'} size={20} color={'green'}/>
+        <MaterialCommunityIcons name={doc?.voters.includes(username) ? 'thumb-up' :'thumb-up-outline'} size={20} color={'green'}/>
           </TouchableOpacity>
         <Text style={{marginHorizontal:4}}>{doc.votes}</Text>
         </View> : null

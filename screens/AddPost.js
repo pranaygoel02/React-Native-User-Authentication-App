@@ -18,20 +18,41 @@ const AddPost = () => {
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
   const [error, setError] = useState('')
+  const [username, setUsername] = useState('')
+    
+    useEffect(()=>{
+      const getUsername = () => {
+        // console.log('use effect running');
+        try{
+          AsyncStorage.getItem('Username')
+          .then(value => {
+            setUsername(prev=>value)
+            setTitle(prev=>'')
+            setQuery(prev=>'')
+            getUserQuestions(value)
+          })
+        }catch(err){
+          console.log(err);
+        }
+      }
+      getUsername()
+    },[])
+    
 
 const newPost = async () => {
   setError(prev=>'')
   setAdding(prev=>true)
     console.log('adding ques');
     const tagsArr = tags.split('@')
-    await setDoc(doc(db, "questions", auth.currentUser.email), 
+    await setDoc(doc(db, "questions", username), 
     {
       questions: [...userQues,
         {
           id: uuid.v4(),
           date: new Date().toISOString(),
-          author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
-          author_mail: auth.currentUser.email,
+          // author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
+          // author_mail: auth.currentUser.email,
+          author: username,
           title: title,
           query: query,
           tags: tagsArr,
@@ -49,11 +70,12 @@ const newPost = async () => {
     setTimeout(()=>{
       setAdded(prev=>false)
     },1500)
+    Keyboard.dismiss()
 }
 
 
-  const getUserQuestions = async() => {
-    const docRef = doc(db, "questions", auth.currentUser?.email);
+  const getUserQuestions = async(value) => {
+    const docRef = doc(db, "questions", value);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
@@ -66,9 +88,7 @@ const newPost = async () => {
 }
 
 useEffect(()=>{
-  setTitle(prev=>'')
-  setQuery(prev=>'')
-  getUserQuestions()
+ 
   },[])
 
   
@@ -104,7 +124,13 @@ useEffect(()=>{
                 />
               </View>
               <Text style={{marginVertical:8}}>{query.length} characters</Text>
-              <TextInput value={tags} onChangeText={(text)=>setTags(prev=>text)} style={[styles.input,styles.input_post,{color:'rgb(24,152,254)',fontSize:16}]} placeholder='Add tags... For Example: @Nodejs @Reactjs...'/>
+              <TextInput 
+              value={tags} 
+              onChangeText={(text)=>setTags(prev=>text)} 
+              style={[styles.input,styles.input_post,{color:'rgb(24,152,254)',fontSize:16}]} 
+              placeholder='Add tags... For Example: @Nodejs @Reactjs...'
+              keyboardType='twitter'
+              />
               </View>
               <View style={{display:'flex'}}>
                 <TouchableOpacity disabled={adding} onPress={()=>{

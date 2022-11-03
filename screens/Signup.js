@@ -15,6 +15,7 @@ const Signup = ({navigation}) => {
     const [showCPass, setShowCPass] = useState(false)
     const [email, setEmail] = useState('')
     const [username, setUsername] = useState('')
+    const [bio,setBio] = useState('')
     const [password, setPassword] = useState('')
     const [CPassword, setCPassword] = useState('')
     const [validateMessage, setValidateMessage] = useState(null)
@@ -50,17 +51,27 @@ const Signup = ({navigation}) => {
         console.log(err);
       }
     }
+    const saveUsername = async () => {
+      try{
+        await AsyncStorage.setItem('Username',username);
+        await AsyncStorage.setItem('Bio',bio);
+      }catch(err){
+        console.log(err);
+      }
+    }
     const getUsernames = async() => {
       console.log('getting usernames');
       // setUsernames(prev=>[])
       try{
         const querySnapshot = await getDocs(collection(db, "username"));
+        if(querySnapshot){
         querySnapshot.forEach((doc) => {
           console.log(doc.data());
           // doc.data() is never undefined for query doc snapshots
           // console.log(doc.id, " => ", doc.data());
           setUsernames(prev=>[...new Set([...prev,doc.data().username])])
-          })
+          }) 
+        }
       }catch(e){
         console.log(e);
       }
@@ -75,19 +86,20 @@ console.log('usernames: ',usernames);
 console.log('====================================');
 
     const clearForm = () => {
-        setEmail('')
-        setUsername('')
-        setPassword('')
-        setCPassword('')
-        setSigningin(prev=>!prev)
-        saveLoginState();
-        createSucessAlert();
+      saveUsername()  
+      setEmail('')
+      setUsername('')
+      setPassword('')
+      setCPassword('')
+      setSigningin(prev=>!prev)
+      saveLoginState();
+      createSucessAlert();
     }
 
     const addUserToFirestore = async (data) => {
         console.log('adding data: ', data);
         await setDoc(doc(db, "users", data.email), data);
-        await setDoc(doc(db, "username", data.email), {username:data.username});
+        await setDoc(doc(db, "username", data.email), {username:data.username,bio:''});
     }
     
     // const addUsername = async (data) => {
@@ -96,8 +108,8 @@ console.log('====================================');
 
     let signup = async ()=>{
         Keyboard.dismiss()
-        if(password!=='' && CPassword!=='' &&  password === CPassword && username!=='' && email!==''){
-          if(!usernames.includes(username)){
+        if(password!=='' && CPassword!=='' &&  password === CPassword && username.trim()!=='' && email!==''){
+          if(!usernames.includes(username.trim())){
             setSigningin(prev=>!prev)
             setValidateMessage(prev=>'')
               await createUserWithEmailAndPassword(auth, email, password)
@@ -116,6 +128,7 @@ console.log('====================================');
                       photo: auth.currentUser.photoURL ? auth.currentUser.photoURL : '',
                       phoneNumber: auth.currentUser.phoneNumber ? auth.currentUser.phoneNumber : '',
                       username: username,
+                      bio: ''
                     }
                     addUserToFirestore(data);
                   // addUsername(data);
@@ -168,6 +181,7 @@ console.log('====================================');
             style={[styles.input, {marginVertical: 8}]}
             value={email}
             onChangeText={text=>setEmail(text)}
+            keyboardType={'email-address'}
         />
         </View>
         <View style={styles.inputField}>
@@ -178,6 +192,7 @@ console.log('====================================');
             style={[styles.input, {marginVertical: 8}]}
             value={username}
             onChangeText={text=>setUsername(text)}
+            autoCapitalize={'none'}
         />
         </View>
         <View style={styles.inputField}>

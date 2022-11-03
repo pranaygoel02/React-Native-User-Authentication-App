@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
     header: {
         alignSelf: 'flex-start',
         fontFamily: 'PoppinsSemiBold',
-        fontSize: 40,
-        color: '#182a4b'
+        fontSize: 32,
+        color: 'rgba(0,0,0)'
     },
     inputContainer: {
         width: '100%',
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         marginVertical: 16,
         borderRadius: 10,
         shadowColor: 'black',
-        borderBottomColor: '#666',
+        borderColor: '#666',
         borderBottomWidth: 0.3,
         width: '90%',
     },

@@ -11,6 +11,7 @@ import AddPost from './AddPost'
 import QuesCard from '../components/QuesCard'
 import Chip from '../components/Chip'
 import Details from './Details'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const wait = timeout => {
   return new Promise(resolve => setTimeout(resolve, timeout));
@@ -24,6 +25,24 @@ const Feed = ({navigation,route}) => {
   const [list, setList] = useState([])
   const [newest, setNewest] = useState(true)
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy]  = useState('latest')
+  const [username, setUsername] = useState('')
+    
+  useEffect(()=>{
+    const getUsername = () => {
+      // console.log('use effect running');
+      try{
+        AsyncStorage.getItem('Username')
+        .then(value => {
+          // console.log(value);
+          setUsername(prev=>value)
+        })
+      }catch(err){
+        console.log(err);
+      }
+    }
+    getUsername()
+  },[])
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -67,39 +86,21 @@ const Feed = ({navigation,route}) => {
     setList(prev=>prev.reverse())
   },[newest])
 
-  // const getAllDocs = useCallback(async() => {
-  //   setDocs(prev=>[])
-  //   console.log('====================================');
-  //   console.log('getting all docs');
-  //   console.log('====================================');
-  //   const querySnapshot = await getDocs(collection(db, "questions"));
-  //   querySnapshot.forEach((doc) => {
-  //   // doc.data() is never undefined for query doc snapshots
-  //   // console.log(doc.id, " => ", doc.data());
-  //   doc.data().questions.map(doc => {
-  //   //   console.log('====================================');
-  //   //   console.log(docs);
-  //   //   console.log('====================================');
-  //     setDocs(prev=>[...new Set([...prev,doc])])
-  //   })
-  //   })
-  // },[docs])
-
   useEffect(()=>{
     setList(prev=>docs.filter(doc=>{
-      return doc?.title.toLowerCase().includes(search.toLowerCase())
+      return (doc?.title.toLowerCase().includes(search.toLowerCase()) || doc?.tags.filter(tag=>{return tag.toLowerCase().includes(search.toLowerCase())}).length > 0)
     }))
   },[search])
 
   console.log('auth.currentUser?.email: ', auth.currentUser?.email);
   
   return (
-    <SafeAreaView style={{flex: 1,alignItems:'center',paddingHorizontal:8}}>
+    <View style={{flex: 1,alignItems:'center',paddingHorizontal:8}}>
       <Text style={styles.header}>Recent Queries</Text>
       <View style={{width:'100%',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingBottom:8}}>
       <View style={[{width:'74%',display:'flex',flexDirection:'row',padding:2,paddingHorizontal:8,justifyContent:'flex-start',alignItems:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}]}>
       <MaterialIcons name='search' size={20}/>
-      <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search...' />
+      <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search by query title/tags...' />
       </View>
       <View style={{marginVertical:2,alignSelf:'flex-end',display:'flex',flexDirection:'row',alignItems:'center', padding:2,paddingHorizontal:8,justifyContent:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8}}>
       <Text style={{fontSize:16}}>{newest ? <Text>Latest</Text> : <Text>Oldest</Text>}</Text>
@@ -111,13 +112,7 @@ const Feed = ({navigation,route}) => {
       <ScrollView
         contentContainerStyle={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {/* {newest && list.reverse().map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc} />)}
-        {!newest && list.map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc} />)} */}
         {list.map(doc=> doc && <QuesCard key={doc?.id} navigation={navigation} doc={doc}/>)}
-        {/* <View style={{marginVertical:16,borderTopWidth:0.2,padding:8,borderColor:'black',width:'100%'}}>
-        <Text style={{textAlign:'center',color:'rgb(25, 134, 214)'}}>Team Forum App</Text>
-        <Text style={{textAlign:'center',color:'rgb(25, 134, 214)'}}>Developed by Pranay Goel</Text>
-        </View> */}
       </ScrollView>
       <GestureRecognizer onSwipeDown={()=>{
         getAllDocs()
@@ -138,7 +133,7 @@ const Feed = ({navigation,route}) => {
       </TouchableOpacity>
       </View>
 
-    </SafeAreaView>
+    </View>
   )
 }
 

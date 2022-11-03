@@ -10,7 +10,7 @@ const Comment = ({comment}) => {
     <View style={{backgroundColor: 'rgba(226, 243, 251,0.8)',marginVertical:4,padding:8,borderRadius:8}}>
       <Text style={{padding:8,borderRadius:4,borderLeftWidth:4,borderColor:'green',backgroundColor:'rgba(255,255,255,0.8)'}}>{comment?.comment}</Text>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',marginVertical:4,width:'100%',justifyContent:'space-between'}}>
-        <Text style={{ fontSize:12}}>by {auth.currentUser.email === comment?.author ? 'You' : comment?.author}</Text>
+        <Text style={{ fontSize:12}}>by @{comment?.author}</Text>
         {comment?.date &&  <Text style={{ fontSize:12}}>{time} ago</Text>}
       </View>
     </View>

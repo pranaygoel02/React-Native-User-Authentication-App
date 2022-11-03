@@ -15,6 +15,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Octicons from 'react-native-vector-icons/Octicons'
 // import LinearGradient from 'react-native-linear-gradient';
 import { LinearGradient } from 'expo-linear-gradient'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 
 const Post = ({}) => {
@@ -28,9 +29,28 @@ const Post = ({}) => {
     const [open, setOpen] = useState(post?.open)
     const [votes, setVotes] = useState(post?.votes)
     const [voters,setVoters] = useState(post?.voters)
-    const [vote,setVote] = useState(post?.voters.includes(auth.currentUser?.email))
     const [currPostStatus, setcurrPostStatus] = useState(post)
     const [questions, setQuestions] = useState([])
+    const [username, setUsername] = useState('')
+    const [vote,setVote] = useState(false)
+    
+    useEffect(()=>{
+      const getUsername = () => {
+        // console.log('use effect running');
+        try{
+          AsyncStorage.getItem('Username')
+          .then(value => {
+            // console.log(value);
+            setUsername(prev=>value)
+            setVote(prev=>post?.voters.includes(value))
+            console.log(value);
+          })
+        }catch(err){
+          console.log(err);
+        }
+      }
+      getUsername()
+    },[])
 
     const newComment = async () => {
       console.log('adding comment');
@@ -39,7 +59,7 @@ const Post = ({}) => {
         comments: [...comments,
           {
             date: new Date().toISOString(),
-            author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
+            author: username,
             comment: comment
           }
         ]
@@ -65,7 +85,7 @@ useEffect(()=>{
 
 
 useEffect(()=>{
-  onSnapshot(doc(db, "questions", post?.author_mail), (doc) => {
+  onSnapshot(doc(db, "questions", post?.author), (doc) => {
       // console.log("Current Post data: ", doc.data());
       if(doc.data()) {
         setQuestions(prev=>doc.data()?.questions.filter(doc => {return doc.id !== post.id}))
@@ -79,14 +99,14 @@ useEffect(()=>{
   setOpen(prev=>currPostStatus.open)
   setVotes(prev=>currPostStatus.votes)
   setVoters(prev=>currPostStatus.voters)
-  setVote(prev=>currPostStatus?.voters?.includes(auth.currentUser?.email))
+  setVote(prev=>currPostStatus?.voters?.includes(username))
 },[currPostStatus])
 
 const handlePostOpen = async () => {
   console.log('handling post open state');
   try{
        
-  await setDoc(doc(db, "questions", post?.author_mail), 
+  await setDoc(doc(db, "questions", post?.author), 
       {
         questions: [...questions,
           {
@@ -104,16 +124,16 @@ const handlePostOpen = async () => {
 }
 
 const handlePostVote = async () => {
-  console.log('handling post open state');
+  console.log('handling post vote state');
   try
   {    
-    await setDoc(doc(db, "questions", post?.author_mail), 
+    await setDoc(doc(db, "questions", post?.author), 
       {
         questions: [...questions,
           {
             ...currPostStatus,
             votes: (vote) ? votes - 1 : votes + 1,
-            voters: (vote) ? voters.filter(doc=>{return doc!==auth.currentUser.email}) : [...voters,auth.currentUser.email]
+            voters: (vote) ? voters.filter(doc=>{return doc!==username}) : [...voters,username]
           }
         ]
       });    
@@ -128,15 +148,15 @@ const handlePostVote = async () => {
 console.log('currPostStatus: ',currPostStatus);
 
   return (
-    <SafeAreaView style={[open && {paddingBottom:150},{paddingTop:16,paddingHorizontal:8,flex:1}]}>
+    <SafeAreaView style={[open && {paddingBottom:70},{paddingTop:16,paddingHorizontal:8,flex:1}]}>
       <ScrollView>
       <Text style={[styles.header,{fontSize:32}]}>{post?.title}</Text>
-      <TouchableOpacity onPress={()=>{if(auth.currentUser?.email === post.author_mail) handlePostOpen()}} style={[open ? styles1.open : styles1.closed,{padding: 8,marginVertical:4,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
+      <TouchableOpacity onPress={()=>{if(username === post.author) handlePostOpen()}} style={[open ? styles1.open : styles1.closed,{padding: 8,marginVertical:4,paddingHorizontal:12,display:'flex',alignItems:'center',borderRadius:32,color:'#fff',alignSelf:'flex-start',flexDirection:'row'}]}>
     <Octicons name={`issue-${open ? 'opened':'closed'}`} size={20} color='#fff'/>
       <Text style={{marginLeft:4,fontSize:16,color:'#fff',textTransform:'capitalize'}}>{open ? 'open' : 'closed'}</Text>
       </TouchableOpacity>
       <View style={{display:'flex',flexDirection:'row',alignItems:'center',padding:8,paddingBottom:16,width:'100%',justifyContent:'space-between'}}>
-        <Text style={{ fontSize:12}}>by {post.author}</Text>
+        <Text style={{ fontSize:12}}>by @{post.author}</Text>
         <Text style={{ fontSize:12}}>{time} ago</Text>
       </View>
       {post?.tags.length > 1 && <View style={{width:'100%',display:'flex',flexDirection:'row',flexWrap:'wrap',marginVertical: 10}}>
@@ -159,9 +179,9 @@ console.log('currPostStatus: ',currPostStatus);
       {newest && list.reverse().map(com => <Comment comment={com}/>)}
         {!newest && list.map(com => <Comment comment={com}/>)}
       </ScrollView>
-      {open && <LinearGradient colors={['transparent', 'rgba(255,255,255,1)']} style={{position:'absolute',bottom:0,display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'white',width:'104%',padding:8}}>
-      <TextInput onChangeText={(text)=>setComment(text)} value={comment} style={[styles.input,styles.input_post]} placeholder='Add comment...'/>
-      <TouchableOpacity onPress={()=>{if(comment!=='') newComment()}} style={styles.button}><Text style={styles.buttonText}>Post Comment</Text></TouchableOpacity>
+      {open && <LinearGradient colors={['transparent', 'rgba(255,255,255,1)']} style={[styles.input,{position:'absolute',bottom:0,display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',justifyContent:'center',backgroundColor:'white',marginHorizontal:0,padding:0,borderWidth:0.7,borderBottomWidth:0.7},styles.input_post]}>
+      <TextInput onChangeText={(text)=>setComment(text)} value={comment} placeholder='Add comment...' style={[styles.input_post,{width:'95%'}]}/>
+      <TouchableOpacity onPress={()=>{if(comment!=='') newComment()}}><MaterialIcons name='send' size={24}/></TouchableOpacity>
       </LinearGradient>}
       
     </SafeAreaView>

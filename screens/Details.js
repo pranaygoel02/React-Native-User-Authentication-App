@@ -10,6 +10,8 @@ import {styles} from '../styles/AppStyles'
 import AddPost from './AddPost'
 import QuesCard from '../components/QuesCard'
 import Checkbox from 'expo-checkbox';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 
 
 const wait = timeout => {
@@ -45,20 +47,27 @@ const Feed = ({navigation,route}) => {
   },[docs])
   
   const getAllDocs = useCallback(async() => {
+    try{
     setDocs(prev=>[])
-    const docRef = doc(db, "questions", auth.currentUser?.email);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      // console.log("Document data:", docSnap.data());
-    } else {
-   // doc.data() will be undefined in this case
-       console.log("No such document!");
-    }
-    docSnap.data().questions.map(doc => {
-      // console.log(docs);
-      setDocs(prev=>[...new Set([...prev,doc])])
-    })
+    AsyncStorage.getItem('Username')
+      .then(async (value) => {
+        const docRef = doc(db, "questions", value);
+        const docSnap = await getDoc(docRef); 
+        if (docSnap.exists()) {
+          // console.log("Document data:", docSnap.data());
+        } else {
+       // doc.data() will be undefined in this case
+           console.log("No such document!");
+        }
+        docSnap.data().questions.map(doc => {
+          // console.log(docs);
+          setDocs(prev=>[...new Set([...prev,doc])])
+        }) 
+      })
+  }
+  catch(err){
+    console.log(err);
+  }
   },[docs])
 
   console.log('auth.currentUser?.email: ', auth.currentUser?.email);
@@ -85,17 +94,17 @@ const Feed = ({navigation,route}) => {
 
 
   useEffect(()=>{
-    setList(prev=>docs.filter(docu=>{
-      return docu.doc.title.toLowerCase().includes(search.toLowerCase())
+    setList(prev=>docs.filter(doc=>{
+      return (doc?.title.toLowerCase().includes(search.toLowerCase()) || doc?.tags.filter(tag=>{return tag.toLowerCase().includes(search.toLowerCase())}).length > 0)
     }))
   },[search])
 
   return (
-    <SafeAreaView style={{flex: 1,alignItems:'center',marginHorizontal:8}}>
+    <View style={{flex: 1,alignItems:'center',marginHorizontal:8}}>
       <Text style={styles.header}>Your Posts</Text>
       <View style={[{width:'100%',display:'flex',flexDirection:'row',padding:2,paddingHorizontal:8,justifyContent:'flex-start',alignItems:'center', elevation: 2,backgroundColor:'white',borderColor: 'rgb(226, 233, 270)',borderWidth:1,borderRadius:8,marginBottom:4}]}>
       <MaterialIcons name='search' size={20}/>
-      <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search...' />
+      <TextInput style={{marginHorizontal:4,width:'100%'}} value={search} onChangeText={(text)=>setSearch(prev=>text)}  placeholder='Search by query title/tags...' />
       </View>
       <View style={{flexDirection: 'row',alignItems: 'center',justifyContent:'space-between',width:'100%',paddingVertical:8}}>
       <View style={{flexDirection: 'row',alignItems: 'center'}}>
@@ -122,9 +131,10 @@ const Feed = ({navigation,route}) => {
         {!newest && list.map(doc=> doc && <QuesCard navigation={navigation} doc={doc}/>)}
       </ScrollView>
       :
-      <View style={{flex:1,justifyContent:'center',position:'relative'}}>
-        <Text style={{position:'absolute',zIndex:1,fontSize:32,width:'60%',fontWeight:'600',top:44,left:70}}>{error}</Text>
-        <Image source={require('../assets/add.png')} style={{width: 330, height: 550}} resizeMode='contain'></Image>
+      <View style={{flex:1,justifyContent:'center',position:'relative',alignItems:'center',width:'80%'}}>
+        <MaterialIcons name='post-add' size={140} color='rgba(0,0,0,0.3)'/>
+        <Text style={{position:'relative',zIndex:1,fontSize:36,fontWeight:'600',textAlign:'center'}}>{error}</Text>
+        {/* <Image source={require('../assets/add.png')} style={{width: 330, height: 550}} resizeMode='contain'></Image> */}
       </View>
         }
       <GestureRecognizer onSwipeDown={()=>{
@@ -135,6 +145,7 @@ const Feed = ({navigation,route}) => {
           animationType='slide'
           visible={modalVisible}
           statusBarTranslucent = { true}
+          transparent={true}
           onRequestClose={()=>setModalVisible(false)}>
           <AddPost onClose={()=>setModalVisible(false)} />
         </Modal>
@@ -145,7 +156,7 @@ const Feed = ({navigation,route}) => {
       </TouchableOpacity>
       </View>
     
-    </SafeAreaView>
+    </View>
   )
 }
 

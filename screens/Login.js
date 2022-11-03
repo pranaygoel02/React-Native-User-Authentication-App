@@ -3,12 +3,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React,{useEffect, useState} from 'react'
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
-import {auth,currentUser} from '../firebase'
+import {auth,db,currentUser} from '../firebase'
 import { signInWithEmailAndPassword } from "firebase/auth";
 import GoogleLogin from '../components/GoogleLogin';
 import {styles} from '../styles/AppStyles'
 // import { async } from '@firebase/util';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 
@@ -36,7 +37,19 @@ const Login = ({navigation}) => {
       }
     }
   
-    
+    const saveUsername = async ({email}) => {
+      try{
+        const docRef = doc(db,"username",email);
+        const docSnap = await getDoc(docRef);
+        if(docSnap.exists()){
+          await AsyncStorage.setItem('Username',docSnap.data().username);
+          await AsyncStorage.setItem('Bio',docSnap.data().bio);
+        }
+      }catch(err){
+        console.log(err);
+      }
+    }
+
     useEffect(()=>{
       const getLoginState = () => {
         try{
@@ -63,6 +76,7 @@ const Login = ({navigation}) => {
               console.log(user );
               console.log('====================================');
               setLoggingIn(prev=>!prev)
+              saveUsername({email:user.email})
               saveLoginState();
                 navigation.replace('Home',{user})
             })
@@ -96,6 +110,7 @@ const Login = ({navigation}) => {
             style={styles.input}
             value={email}
             onChangeText={text=>setEmail(text)}
+            keyboardType={'email-address'}
         />
         </View>
         <View style={styles.inputField}>
