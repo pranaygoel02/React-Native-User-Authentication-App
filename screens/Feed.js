@@ -44,9 +44,28 @@ const Feed = ({navigation,route}) => {
     getUsername()
   },[])
 
+  const saveLoginState = async () => {
+    try{
+      await AsyncStorage.setItem('LoggedIn','false');
+      console.log('set value');
+    }catch(err){
+      console.log(err);
+    }
+  }
+  const logout = ()=>{
+    signOut(authentication).then(() => {
+      saveLoginState();
+      navigation.replace('Login')
+    }).catch((error) => {
+      console.log(error);
+    });
+  }
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     wait(2000).then(() => setRefreshing(false));
+    if(auth.currentUser.email === undefined){
+      logout()
+    }
     getAllDocs();
   }, []);
   

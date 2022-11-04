@@ -8,9 +8,9 @@ import Login from './screens/Login';
 import Signup from './screens/Signup';
 import ForgotPassword from './screens/ForgotPassword';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { auth } from './firebase';
+// import {auth} from './firebase'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Details from './screens/Details';
+// import Details from './screens/Details';
 import Post from './screens/Post';
 
 const Stack = createStackNavigator () ;
