@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ForumApp",
-    "slug": "ForumApp",
+    "name": "QHub",
+    "slug": "QHub",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -33,7 +33,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "f95479bb-e705-4ece-afd9-540b4095ae55"
+        "projectId": "cfe0360c-ffb3-4278-a22f-b0c6d8e368fb"
       }
     }
   }

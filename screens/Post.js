@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity,ScrollView, StyleSheet } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity,ScrollView, StyleSheet, Image } from 'react-native'
 import React, { useState,useEffect } from 'react'
 import QuesCard from '../components/QuesCard'
 import { useRoute } from '@react-navigation/native'
@@ -163,6 +163,9 @@ console.log('currPostStatus: ',currPostStatus);
         {post.tags?.map(tag => <Chip data={tag}/>)}
       </View>}
       <Text style={{marginVertical:8,borderLeftWidth: 5,paddingHorizontal:12, borderColor:'green'}}>{post?.query}</Text>
+      {post?.images.length > 0 && <View>
+          {post?.images.map(image => <Image source={{uri:image}} resizeMode='contain' style={{width:'100%',height:200,marginVertical:8}}/>)}
+      </View>}
       {votes >=0 && 
       <View style={{display:'flex',flexDirection:'row', alignItems:'center',marginVertical:8}}>
       <TouchableOpacity onPress={handlePostVote}>
