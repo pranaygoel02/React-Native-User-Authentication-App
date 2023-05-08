@@ -32,6 +32,7 @@ const Feed = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [docs, setDocs] = useState([]);
   const [list, setList] = useState([]);
+  const [userDocs, setUserDocs] = useState([]);
   const [newest, setNewest] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("latest");
@@ -91,6 +92,7 @@ const Feed = ({ navigation, route }) => {
   useEffect(() => {
     console.log("docssssssssssssss:", docs);
     setList((prev) => docs);
+    setUserDocs((prev) => docs.filter((doc) => doc?.author === username));
     console.log(docs);
   }, [docs]);
 
@@ -220,7 +222,7 @@ const Feed = ({ navigation, route }) => {
           list.map(
             (doc) =>
               doc && (
-                <QuesCard key={doc?.id} navigation={navigation} doc={doc} />
+                <QuesCard key={doc?.id} navigation={navigation} doc={doc} userDocs={userDocs ? userDocs : list?.filter(item => item?.author === username)}/>
               )
           )
         ) : (

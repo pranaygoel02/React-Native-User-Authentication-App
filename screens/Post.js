@@ -35,7 +35,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-const Post = ({}) => {
+const Post = ({navigation}) => {
   const {
     params: { post },
   } = useRoute();
@@ -87,6 +87,12 @@ const Post = ({}) => {
   };
 
   useEffect(() => {
+    if(post === undefined) {
+      navigation.navigate("Home");
+    }
+  },[post])
+
+  useEffect(() => {
     setList((prev) => comments);
   }, [comments]);
 
@@ -117,13 +123,16 @@ const Post = ({}) => {
           })[0]
         );
       }
+      else {
+        navigation.navigate("Home");
+      }
     });
   }, []);
 
   useEffect(() => {
-    setOpen((prev) => currPostStatus.open);
-    setVotes((prev) => currPostStatus.votes);
-    setVoters((prev) => currPostStatus.voters);
+    setOpen((prev) => currPostStatus?.open);
+    setVotes((prev) => currPostStatus?.votes);
+    setVoters((prev) => currPostStatus?.voters);
     setVote((prev) => currPostStatus?.voters?.includes(username));
   }, [currPostStatus]);
 

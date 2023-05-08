@@ -19,10 +19,11 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { LongPressGestureHandler, State } from "react-native-gesture-handler";
+import {  doc as document, setDoc } from "firebase/firestore";
 
 dayjs.extend(relativeTime);
 
-const QuesCard = ({ navigation, doc, idx }) => {
+const QuesCard = ({ navigation, doc, idx, userDocs }) => {
   const [username, setUsername] = useState("");
 
   const onLongPress = (event) => {
@@ -37,15 +38,30 @@ const QuesCard = ({ navigation, doc, idx }) => {
           },
           {
             text: "Delete",
-            onPress: () => {
-              console.log("Delete Pressed");
-              db.collection("questions").doc(doc.id).delete();
+            onPress: async () => {
+              console.log("Delete Pressed", doc, userDocs);
+              await deletePost();
+              Alert.alert("Deleted", "Post deleted successfully", [
+                {
+                  text: "OK",
+                  onPress: () => console.log("OK Pressed"),
+                  style: "cancel",
+                }
+              ]
+              )
             },
           },
         ]);
       }
     }
   };
+
+  const deletePost = async () => {
+    await setDoc(document(db, "questions", doc?.author), {
+      questions: userDocs.filter((item) => item.id !== doc.id),
+    })
+  }
+
 
   useEffect(() => {
     const getUsername = () => {
