@@ -24,7 +24,6 @@ import uuid from "react-native-uuid";
 import * as ImagePicker from "expo-image-picker";
 import { uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
-import { set } from "react-native-reanimated";
 
 const AddPost = () => {
   const [title, setTitle] = useState("");
@@ -131,6 +130,7 @@ const AddPost = () => {
           date: new Date().toISOString(),
           // author: auth.currentUser.displayName ? auth.currentUser.displayName : auth.currentUser.email,
           // author_mail: auth.currentUser.email,
+          author_image: auth.currentUser.photoURL,
           author: username,
           title: title,
           query: query,
