@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  Modal
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import QuesCard from "../components/QuesCard";
@@ -33,9 +34,9 @@ import Octicons from "react-native-vector-icons/Octicons";
 // import LinearGradient from 'react-native-linear-gradient';
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ImageViewer from "react-native-image-zoom-viewer";
 
-
-const Post = ({navigation}) => {
+const Post = ({ navigation }) => {
   const {
     params: { post },
   } = useRoute();
@@ -87,10 +88,10 @@ const Post = ({navigation}) => {
   };
 
   useEffect(() => {
-    if(post === undefined) {
+    if (post === undefined) {
       navigation.navigate("Home");
     }
-  },[post])
+  }, [post]);
 
   useEffect(() => {
     setList((prev) => comments);
@@ -122,8 +123,7 @@ const Post = ({navigation}) => {
             return doc.id === post.id;
           })[0]
         );
-      }
-      else {
+      } else {
         navigation.navigate("Home");
       }
     });
@@ -189,6 +189,19 @@ const Post = ({navigation}) => {
       ]}
     >
       <ScrollView>
+        <Modal transparent={true} visible={visible}>
+        <ImageViewer
+          imageUrls={post?.images?.map((doc) => {
+            return { url: doc, props: {
+              source: doc,
+            } };
+          })}
+          enableSwipeDown={true}
+          onSwipeDown={() => {
+            setIsVisible((prev) => false);
+          }}          
+        />
+        </Modal>
         <Text style={[styles.header, { fontSize: 32 }]}>{post?.title}</Text>
         <TouchableOpacity
           onPress={() => {
@@ -236,9 +249,19 @@ const Post = ({navigation}) => {
             justifyContent: "space-between",
           }}
         >
-          <View style={{minWidth:'50%',display:'flex',flexDirection:'row',alignItems:'center'}}>
-          <Image style={{width:36,height:36,borderRadius:300}} source={{uri:post?.author_image}}/>
-          <Text style={{ fontSize: 12 }}> @{post.author}</Text>
+          <View
+            style={{
+              minWidth: "50%",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            {post?.author_image  ? <Image
+              style={{ width: 36, height: 36, borderRadius: 300 }}
+              source={{ uri: post?.author_image }}
+            /> :  <MaterialIcons name='account-circle' size={36} color='gray'/>}
+            <Text style={{ fontSize: 12 }}> @{post.author}</Text>
           </View>
           <Text style={{ fontSize: 12 }}>{time} ago</Text>
         </View>
@@ -270,11 +293,13 @@ const Post = ({navigation}) => {
         {post?.images?.length > 0 && (
           <View style={{}}>
             {post?.images.map((image) => (
+              <TouchableOpacity onPress={()=>setIsVisible(true)}>
               <Image
                 source={{ uri: image }}
                 resizeMode="cover"
                 style={{ width: "100%", height: 200, marginVertical: 8 }}
               />
+              </TouchableOpacity>
             ))}
           </View>
         )}
