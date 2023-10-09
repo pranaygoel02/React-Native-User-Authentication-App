@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth} from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore';
+import {getStorage, ref, uploadBytes, } from 'firebase/storage'
 // import {API_KEY,  AUTH_DOMAIN,  PROJECT_ID,  STORAGE_BUCKET,  MESSAGING_SENDER_ID,  APP_ID,  MEASUREMENT_ID} from '@env'
 
 const firebaseConfig = {
@@ -16,5 +17,6 @@ const firebaseConfig = {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth()
   const db = getFirestore(app);
+  const storage = getStorage(app, 'gs://forumapp-6e9e5.appspot.com')
 
-  export { auth,db}
+  export { auth, db, storage, ref, uploadBytes }
